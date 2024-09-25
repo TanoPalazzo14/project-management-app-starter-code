@@ -1,17 +1,63 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate, useParams } from "react-router-dom";
 
 function EditProjectPage() {
+
+  const params = useParams()
+  const navigate = useNavigate()
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [ isFetching , setIsFetching ] = useState(true)
 
-  const handleFormSubmit = (e) => {
+  useEffect(() => {
+
+
+    axios.get(`${import.meta.env.VITE_SERVER_URL}/projects/${params.projectId}`)
+    .then((response) => {
+      setTitle(response.data.title)
+      setDescription(response.data.description)
+      setIsFetching(false)
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+  },[])
+
+  if(isFetching){
+    return <h1>...Loading</h1>
+  }
+
+  const deleteProject = (e) => {
     e.preventDefault();
+    
+    axios.delete(`${import.meta.env.VITE_SERVER_URL}/projects/${params.projectId}`)
+    .then(() => {
+      navigate(`/projects`)
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+
     // ...updated logic should be here
 
   };
+  
+  const handleFormSubmit = async (e) => {
+    e.preventDefault()
 
-  const deleteProject = () => {
+    const updatedProject = {
+      title,
+      description
+    }
+
+    try {
+      await axios.put(`${import.meta.env.VITE_SERVER_URL}/projects/${params.projectId}`,updatedProject)
+      navigate(`/projects/${params.projectId}`)
+    } catch (error) {
+      console.log(error)
+    }
     // ...delete logic should be here
     
   }; 
